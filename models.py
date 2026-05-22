@@ -63,6 +63,45 @@ class ImageAsset(db.Model):
             'description': self.description
         }
 
+class Page(db.Model):
+    __tablename__ = 'pages'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    meta_description = db.Column(db.String(255))
+    status = db.Column(db.String(20), default='Published')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    sections = db.relationship('Section', backref='page', lazy=True, cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'slug': self.slug,
+            'meta_description': self.meta_description,
+            'status': self.status,
+            'sections': [s.to_dict() for s in self.sections]
+        }
+
+class Section(db.Model):
+    __tablename__ = 'sections'
+    id = db.Column(db.Integer, primary_key=True)
+    page_id = db.Column(db.Integer, db.ForeignKey('pages.id'), nullable=False)
+    section_name = db.Column(db.String(100), nullable=False)
+    section_type = db.Column(db.String(50))
+    content_json = db.Column(db.Text)
+    order = db.Column(db.Integer, default=0)
+
+    def to_dict(self):
+        import json
+        return {
+            'id': self.id,
+            'section_name': self.section_name,
+            'section_type': self.section_type,
+            'content': json.loads(self.content_json) if self.content_json else {},
+            'order': self.order
+        }
+
 class Inquiry(db.Model):
     __tablename__ = 'inquiries'
 
