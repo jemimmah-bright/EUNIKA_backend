@@ -12,7 +12,10 @@ CORS(app)
 
 # Configure the SQLAlchemy connection
 # Using SQLite for immediate reliability
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///eunika.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    'sqlite:///eunika.db'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
@@ -242,6 +245,9 @@ def manage_section(section_id):
 
 def seed_data():
     with app.app_context():
+        # Ensure database tables exist before seeding data
+        db.create_all()
+
         # List of default pages to ensure exist
         default_pages = [
             {'title': 'Home', 'slug': '/', 'meta': 'Eunikare International is an umbrella organization dedicated to systemic community transformation.'},
